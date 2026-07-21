@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Spotter Report — SpotterNetwork Field Tool</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="src/css/main.css" />
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>SPOTTER<span>▲</span>REPORT</h1>
+      <div class="subtitle">unofficial field tool · for SpotterNetwork.org</div>
+    </div>
+    <div class="subtitle" id="clock">--:--:--</div>
+  </header>
+
+  <div class="banner">
+    This is still in <b>HEAVY</b> beta. Please report any bugs you find to the github.
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2><span class="dot" id="gpsDot"></span> Live Position</h2>
+        <div id="map"></div>
+        <div class="readout" id="readout">
+          <span class="k">STATUS</span><span class="v" id="rStatus">not started</span>
+          <span class="k">LAT</span><span class="v" id="rLat">—</span>
+          <span class="k">LON</span><span class="v" id="rLon">—</span>
+          <span class="k">ACCURACY</span><span class="v" id="rAcc">—</span>
+          <span class="k">ALTITUDE</span><span class="v" id="rAlt">—</span>
+          <span class="k">HEADING</span><span class="v" id="rHead">—</span>
+          <span class="k">SPEED</span><span class="v" id="rSpeed">—</span>
+          <span class="k">UPDATED</span><span class="v" id="rTime">—</span>
+        </div>
+        <div class="btnrow">
+          <button class="primary" id="btnTrack">Start GPS Tracking</button>
+          <button id="btnPing">Send Position Ping</button>
+          <button id="btnCwa">Look Up CWA / NWS Office</button>
+        </div>
+
+        <div class="toggle" style="margin-top:14px;">
+          <input type="checkbox" id="autoPing">
+          <label for="autoPing" style="margin:0;">Auto-ping every</label>
+          <input type="number" id="autoInterval" value="120" min="120" step="1" style="width:70px;padding:5px 6px;">
+          <span style="font-size:12px;color:var(--dim);">sec</span>
+        </div>
+        <div class="small" id="autoPingHint">
+          Minimum of 120s. Going below poses a risk of getting your SN account banned.
+        </div>
+        <div class="readout" id="autoPingStatus" style="display:none;margin-top:8px;">
+          <span class="k">AUTO-PING</span><span class="v" id="apState">off</span>
+          <span class="k">NEXT IN</span><span class="v" id="apCountdown">—</span>
+          <span class="k">LAST SENT</span><span class="v" id="apLast">—</span>
+        </div>
+
+        <div class="readout" id="cwaReadout" style="margin-top:10px;display:none;">
+          <span class="k">COUNTY</span><span class="v" id="cwaCounty">—</span>
+          <span class="k">STATE</span><span class="v" id="cwaState">—</span>
+          <span class="k">NWS ZONE</span><span class="v" id="cwaZone">—</span>
+          <span class="k">CWA OFFICE</span><span class="v" id="cwaOffice">—</span>
+          <span class="k">OFFICE PHONE</span><span class="v" id="cwaPhone">—</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Spotter Credentials</h2>
+        <label>Private Spotter ID (marker token)</label>
+        <input type="text" id="spotterId" placeholder="Private Spotter ID">
+        <div class="toggle">
+          <input type="checkbox" id="rememberMe">
+          <label for="rememberMe" style="margin:0;">Remember on this device (stored locally)</label>
+        </div>
+        <details>
+          <summary>Advanced: endpoints</summary>
+          <label>Position ping endpoint</label>
+          <input type="text" id="endpointUrl" value="https://www.spotternetwork.org/positions/update">
+          <label>Severe report page</label>
+          <input type="text" id="reportUrl" value="https://www.spotternetwork.org/report/severe">
+        </details>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="banner">
+            This feature is currently in an unfinished state. Submitting will bring you to spotternetwork.org and copy your report to your clipboard.
+        </div>
+        <h2>Compose Report</h2>
+        <label>Hazard Type</label>
+        <div class="hazard-grid" id="hazardGrid">
+          <div class="hz" data-v="tornado">Tornado</div>
+          <div class="hz" data-v="funnelcloud">Funnel Cloud</div>
+          <div class="hz" data-v="wallcloud" data-narr="1">Wall Cloud</div>
+          <div class="hz" data-v="hail">Hail</div>
+          <div class="hz" data-v="wind" data-narr="1">Wind ≥50mph</div>
+          <div class="hz" data-v="flood" data-narr="1">Flooding</div>
+          <div class="hz" data-v="flashflood" data-narr="1">Flash Flood</div>
+          <div class="hz" data-v="damage" data-narr="1">Damage</div>
+          <div class="hz" data-v="winter">Winter (sig.)</div>
+          <div class="hz" data-v="tropical">Tropical (sig.)</div>
+        </div>
+        <div class="small" id="narrHint" style="display:none;">This report type requires a narrative on SpotterNetwork's own form - don't leave notes blank.</div>
+
+        <div class="row2">
+          <div>
+            <label>Magnitude / Size</label>
+            <input type="text" id="magnitude" placeholder="e.g. 1.75in hail, 65mph gust">
+          </div>
+          <div>
+            <label>Time Observed</label>
+            <input type="text" id="obsTime" placeholder="auto-filled">
+          </div>
+        </div>
+
+        <label>Notes</label>
+        <textarea id="notes" placeholder="First-hand observation only. No relays, no radar-based guesses, no lightning/fog/clear-sky reports"></textarea>
+
+        <div class="btnrow">
+          <button class="primary" id="btnSubmit">Submit Report</button>
+          <button id="btnCopy">Copy Formatted Report</button>
+          <a class="linklike" href="https://www.spotternetwork.org/account/index.php" target="_blank" rel="noopener">Open SpotterNetwork Login ↗</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Activity Log</h2>
+        <div class="log" id="log"><div class="empty">Nothing sent yet. Reports and pings will show up here.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Built for spotternetwork.org · not affiliated with Spotter Network Inc. · verify against their
+    <a href="https://www.spotternetwork.org/reporting.php" target="_blank" rel="noopener">reporting guidelines</a>
+    before every submission.
+  </footer>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/src/js/main.js"></script>
+</body>
+</html>
