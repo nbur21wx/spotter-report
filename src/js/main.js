@@ -78,7 +78,7 @@ function onFixError(err) {
 
 btnTrack.addEventListener('click', function () {
     if (!navigator.geolocation) {
-        alert("This browser doesn't support geolocation. Genuinely, how.");
+        addLog("GPS","This browser doesn't support geolocation. Genuinely, how.", "fail");
         return;
     }
     if (watchId === null) {
@@ -125,7 +125,7 @@ function updateCountdownDisplay() {
 
 function startAutoPing() {
     if (!lastFix) {
-        alert("Need a GPS fix before auto-ping can start. Hit \"Start GPS Tracking\" first.");
+        addLog("Auto-Ping","Need a GPS fix before auto-ping can start. Hit \"Start GPS Tracking\" first.", "fail");
         autoPingEl.checked = false;
         return;
     }
@@ -148,7 +148,7 @@ function startAutoPing() {
         }
         updateCountdownDisplay();
     }, 1000);
-    addLog('Auto-Ping', 'Started, every ' + interval + 's.', 'ok');
+    addLog('Auto-Ping', 'Started. Sending GPS fix every ' + interval + 's.', 'ok');
 }
 
 function stopAutoPing() {
@@ -245,7 +245,7 @@ async function sendPing() {
 }
 
 async function lookupCwa() {
-    if (!lastFix) { alert("Hey, where is your location? Have you tried pressing that \"Start GPS Tracking\" button yet? I can't look up a CWA for a location that I don't have..."); return; }
+    if (!lastFix) { addLog("CWA Lookup", "Hey, where is your location? Have you tried pressing that \"Start GPS Tracking\" button yet? I can't look up a CWA for a location that I don't have...", "fail"); return; }
     const base = new URL(endpointEl.value.trim()).origin;
     const url = base + '/report/cwa/' + lastFix.lat + '/' + lastFix.lon;
     try {
@@ -261,26 +261,26 @@ async function lookupCwa() {
         document.getElementById('cwaZone').textContent = m.getAttribute('z_fullzone') || '—';
         document.getElementById('cwaOffice').textContent = m.getAttribute('cwa') || '—';
         document.getElementById('cwaPhone').textContent = m.getAttribute('phone') || '—';
-        addLog('CWA Lookup', 'Pulled county/office info from the real endpoint.', 'ok');
+        addLog('CWA Lookup', 'Pulled CWA information.', 'ok');
     } catch (err) {
         addLog('CWA Lookup', 'Unable to send. Error: (' + err.message + ')', 'fail');
     }
 }
 
 document.getElementById('btnPing').addEventListener('click', function () {
-    if (!lastFix) { alert("Hey, where is your location? Have you tried pressing that \"Start GPS Tracking\" button yet? I can't send out a location I don't have..."); return; }
+    if (!lastFix) { addLog("Position Ping", "Hey, where is your location? Have you tried pressing that \"Start GPS Tracking\" button yet? I can't send out a location I don't have...", "fail"); return; }
     sendPing();
 });
 
 document.getElementById('btnCwa').addEventListener('click', lookupCwa);
 
 document.getElementById('btnSubmit').addEventListener('click', async function () {
-    if (!lastFix) { alert("No GPS fix yet. Start tracking first."); return; }
-    if (!hazard) { alert("Pick a hazard type. SpotterNetwork rejects vague reports, and so do I."); return; }
+    if (!lastFix) { addLog("SpotterNetwork Report", "Hey, where is your location? Have you tried pressing that \"Start GPS Tracking\" button yet? I can't send a report without that...", "fail"); return; }
+    if (!hazard) { addLog("SpotterNetwork Report", "Are you trying to submit nothing? Please select a hazard type before submitting.", "fail"); return; }
     const requiresNarrative = document.querySelector('.hz.active')?.dataset.narr;
     if (requiresNarrative && !document.getElementById('notes').value.trim()) {
-        alert("This report type requires a narrative on SpotterNetwork's own form. Fill in Notes.");
-        return;
+      addLog("SpotterNetwork Report", "This type of report requires a narrative.", "fail");
+      return;
     }
     const text = buildReportText('report');
     await copyText(text);
@@ -289,7 +289,7 @@ document.getElementById('btnSubmit').addEventListener('click', async function ()
 });
 
 document.getElementById('btnCopy').addEventListener('click', async function () {
-    if (!lastFix) { alert("No GPS fix yet — nothing to copy."); return; }
+    if (!lastFix) { addLog("Manual Copy", "No GPS fix yet - nothing to copy.", "fail"); return; }
     const text = buildReportText(hazard ? 'report' : 'ping');
     const ok = await copyText(text);
     addLog('Manual Copy', ok ? 'Report text copied to clipboard.' : 'Copy failed. Your browser blocked it. Select and copy manually.', ok ? 'copied' : 'fail');
