@@ -80,8 +80,27 @@ header h1 span {
     line-height: 1.5;
 }
 
+.banner-warn {
+    border: 1px solid #4a1616;
+    background: rgba(255, 32, 32, 0.08);
+    color: #ff7a7a;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
 .banner b {
     color: var(--amber);
+}
+
+.banner-warn b {
+    color: var(--tornado-red);
+}
+
+.banner-warn a {
+    color: #ff9c9c;
 }
 
 .grid {

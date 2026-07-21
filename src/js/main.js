@@ -133,6 +133,7 @@ function startAutoPing() {
     autoIntervalEl.disabled = true;
     document.getElementById('autoPingStatus').style.display = 'grid';
     document.getElementById('apState').textContent = 'on — every ' + interval + 's';
+    document.getElementById('btnPing').disabled = true;
     secondsRemaining = interval;
     updateCountdownDisplay();
     autoPingCountdownTimer = setInterval(function () {
@@ -157,6 +158,7 @@ function stopAutoPing() {
     document.getElementById('apState').textContent = 'off';
     document.getElementById('apCountdown').textContent = '—';
     autoPingEl.checked = false;
+    document.getElementById('btnPing').disabled = false;
 }
 
 autoPingEl.addEventListener('change', function (e) {
